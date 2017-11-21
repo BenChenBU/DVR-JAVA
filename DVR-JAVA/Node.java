@@ -52,7 +52,9 @@ public class Node {
     	 * Check that it is a neighboring node if the link cost in lkcost is not itself / infinity
     	 */
     	for (int i = 0; i < 4; i++) {
-    		if (i != this.nodename && this.lkcost[i] < INFINITY) {
+    		if (i == this.nodename || this.lkcost[i] == INFINITY) {
+    			continue;
+    		} else {
     			Packet updatePacket = new Packet(this.nodename, i, this.lkcost);
     			System.out.println(this.nodename + " is sending an initial mincost to neighbor " + i);
     			NetworkSimulator.tolayer2(updatePacket);
@@ -70,8 +72,13 @@ public class Node {
     	for (int i = 0; i < 4; i++) {
     		// set the new temp path of going through the received packet's node's mincosts for comparison
     		newPath = this.lkcost[rcvdpkt.sourceid] + rcvdpkt.mincost[i];
+    		if (newPath > INFINITY) {
+    			newPath = INFINITY;
+    		}
     		// if the new path is not infinity -- meaning reachable, and its not already there - then update the distance table
-    		if (newPath < INFINITY && newPath != this.costs[i][rcvdpkt.sourceid]) {
+    		if (newPath == INFINITY || newPath == this.costs[i][rcvdpkt.sourceid]) {
+    			continue;
+    		} else {
     			this.costs[i][rcvdpkt.sourceid] = newPath;
     		}
     	}
@@ -106,7 +113,9 @@ public class Node {
     	for (int i = 0; i < 4; i++) {
     		poisonedMin = this.currentMinCost.clone();
     		// only send to neighbors this new update packet
-    		if (i != this.nodename && this.lkcost[i] < INFINITY) {
+    		if (i == this.nodename ||this.lkcost[i] == INFINITY) {
+    			continue;
+    		} else {
     			// we must check if we must lie to the neighboring node about any distances - using Poisoned Reverse
     			// We do this by checking whether any changed mincost value is because of a route through neighbor node
     			for (int j = 0; j < 4; j++) {
