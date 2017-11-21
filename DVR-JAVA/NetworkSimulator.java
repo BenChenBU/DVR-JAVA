@@ -26,6 +26,8 @@ public class NetworkSimulator {
     // Connection costs between routers used for sanity checks
     private static int[][] connectcosts = new int[4][4];
     
+    public static int packetsSent = 0;
+    
     
     /**
      * Constructor
@@ -176,6 +178,7 @@ public class NetworkSimulator {
                     System.exit(0);
             }
         }
+        System.out.println("Number of routing packets sent total is : " + packetsSent);
         System.out.println("Simulator terminated at time " + getTime());
     }
     

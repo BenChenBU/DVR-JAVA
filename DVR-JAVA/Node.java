@@ -52,10 +52,11 @@ public class Node {
     	 * Check that it is a neighboring node if the link cost in lkcost is not itself / infinity
     	 */
     	for (int i = 0; i < 4; i++) {
-    		if (i != this.nodename && this.lkcost[i] != INFINITY) {
+    		if (i != this.nodename && this.lkcost[i] < INFINITY) {
     			Packet updatePacket = new Packet(this.nodename, i, this.lkcost);
     			System.out.println(this.nodename + " is sending an initial mincost to neighbor " + i);
     			NetworkSimulator.tolayer2(updatePacket);
+    			NetworkSimulator.packetsSent++;
     		}
     	}
     }    
@@ -105,7 +106,7 @@ public class Node {
     	for (int i = 0; i < 4; i++) {
     		poisonedMin = this.currentMinCost.clone();
     		// only send to neighbors this new update packet
-    		if (i != this.nodename && this.lkcost[i] != INFINITY) {
+    		if (i != this.nodename && this.lkcost[i] < INFINITY) {
     			// we must check if we must lie to the neighboring node about any distances - using Poisoned Reverse
     			// We do this by checking whether any changed mincost value is because of a route through neighbor node
     			for (int j = 0; j < 4; j++) {
@@ -119,12 +120,20 @@ public class Node {
     			Packet updatepkt = new Packet(this.nodename, i, poisonedMin);
     			System.out.println(this.nodename + " is sending updated mincost to " + i + " after receiving update");
     			NetworkSimulator.tolayer2(updatepkt);
+    			NetworkSimulator.packetsSent++;
     		}
     	}
     }
     
     /* called when cost from the node to linkid changes from current value to newcost*/
-    void linkhandler(int linkid, int newcost) {  }    
+    void linkhandler(int linkid, int newcost) { 
+    	// depending on the linkid of whether node 0 or 1 is changed, change the lkcosts array accordingly
+    	this.lkcost[linkid] = newcost;
+    	// After the lkcost of the node is changed -- send the new update packet to all neighbors
+    	this.currentMinCost = this.lkcost.clone();
+    	System.out.println("The link cost between 0 and 1 has changed for node " + this.nodename + ".");
+    	sendUpdate();
+    }    
 
 
     /* Prints the current costs to reaching other nodes in the network */
